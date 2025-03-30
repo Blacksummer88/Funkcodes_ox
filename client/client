@@ -124,6 +124,10 @@ RegisterCommand(Config.Command, function()
                     })
                     if input and input[1] then
                         TriggerServerEvent('funkcodes_ox:addCode', playerJob.name, input[1])
+
+                        SetTimeout(250, function()
+                            ExecuteCommand(Config.Command)
+                        end)
                     end
                 end
             })
@@ -192,6 +196,16 @@ RegisterCommand(Config.Command, function()
                                 })
                                 if input and input[1] then
                                     TriggerServerEvent('funkcodes_ox:editCode', playerJob.name, i, input[1])
+
+                                    SetTimeout(250, function()
+                                        ExecuteCommand(Config.Command)
+                                    end)
+                                end
+
+                                if not input then
+                                    SetTimeout(250, function()
+                                        ExecuteCommand(Config.Command)
+                                    end)
                                 end
                             end
                         })
@@ -232,6 +246,12 @@ RegisterCommand(Config.Command, function()
                                 if result == 'confirm' then
                                     TriggerServerEvent('funkcodes_ox:deleteCode', playerJob.name, i)
                                 end
+
+                                if result == 'cancel' then
+                                    SetTimeout(250, function()
+                                        ExecuteCommand(Config.Command)
+                                    end)
+                                end
                             end
                         })
                     end
@@ -255,6 +275,10 @@ RegisterCommand(Config.Command, function()
                 })
                 if input and input[1] then
                     TriggerServerEvent('funkcodes_ox:suggestCode', playerJob.name, input[1])
+
+                    SetTimeout(250, function()
+                        ExecuteCommand(Config.Command)
+                    end)
                 end
             end
         })
