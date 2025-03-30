@@ -1,0 +1,189 @@
+local codesByJob = {}
+local suggestionsByJob = {}
+function NotifyPlayer(src, msg, type)
+    if Config.Notification_System == 'OX' then
+        TriggerClientEvent('ox_lib:notify', src, {
+            description = msg,
+            type = type or 'inform'
+        })
+    elseif Config.Notification_System == 'ESX' then
+        TriggerClientEvent('esx:showNotification', src, msg, type or 'info', 5000)
+    elseif Config.Notification_System == 'Custom' then
+        -- ↓↓↓↓↓↓Trigger dein eigenes Event↓↓↓↓↓↓
+        TriggerClientEvent('custom_notify', src, msg, type)
+    end
+end
+
+local function loadCodes()
+    local fileData = LoadResourceFile(GetCurrentResourceName(), "codes.json")
+    if fileData then
+        local parsed = json.decode(fileData)
+        if parsed and type(parsed) == "table" then
+            codesByJob = parsed
+        else
+            if Config.debug then
+                print("[ERROR] Fehler beim Parsen der codes.json-Datei. Leere Tabelle wird verwendet.")
+            end
+            codesByJob = {}
+        end
+    else
+        if Config.debug then
+            print("[ERROR] codes.json existiert nicht, leere Tabelle wird verwendet.")
+        end
+        codesByJob = {}
+    end
+end
+
+local function loadSuggestions()
+    local fileData = LoadResourceFile(GetCurrentResourceName(), "suggestions.json")
+    if fileData then
+        local parsed = json.decode(fileData)
+        if parsed and type(parsed) == "table" then
+            suggestionsByJob = parsed
+        else
+            print("[ERROR] Fehler beim Parsen der suggestions.json-Datei. Leere Tabelle wird verwendet.")
+            suggestionsByJob = {}
+        end
+    else
+        print("[ERROR] suggestions.json existiert nicht, leere Tabelle wird verwendet.")
+        suggestionsByJob = {}
+    end
+end
+
+
+AddEventHandler('onResourceStart', function(res)
+    if res == GetCurrentResourceName() then
+        loadCodes()
+        loadSuggestions()
+    end
+end)
+
+local function saveCodes()
+    local success = SaveResourceFile(GetCurrentResourceName(), "codes.json", json.encode(codesByJob, { indent = true }), -1)
+    if Config.debug then
+        if not success then
+            print("[ERROR] Fehler beim Speichern von codes.json.")
+        else
+            print("[INFO] codes.json erfolgreich gespeichert.")
+        end
+    end
+end
+
+local function saveSuggestions()
+    local success = SaveResourceFile(GetCurrentResourceName(), "suggestions.json", json.encode(suggestionsByJob, { indent = true }), -1)
+    if Config.debug then
+        if not success then
+            print("[ERROR] Fehler beim Speichern von suggestions.json.")
+        else
+            print("[INFO] suggestions.json erfolgreich gespeichert.")
+        end
+    end
+end
+
+RegisterNetEvent('funkcodes_ox:suggestCode', function(job, newCode)
+    local src = source
+    suggestionsByJob[job] = suggestionsByJob[job] or {}
+    table.insert(suggestionsByJob[job], newCode)
+    saveSuggestions()
+
+    NotifyPlayer(src, Config.Notification.Suggestion_sent, 'success')
+end)
+
+RegisterNetEvent('funkcodes_ox:addCode', function(job, newCode)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        codesByJob[job] = codesByJob[job] or {}
+        
+        local newCodeEntry = { id = #codesByJob[job] + 1, title = newCode }
+        table.insert(codesByJob[job], newCodeEntry)
+
+        saveCodes()
+
+        NotifyPlayer(src, Config.Notification.code_added, 'success')
+    end
+end)
+
+RegisterNetEvent('funkcodes_ox:approveSuggestion', function(job, index)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        local suggestions = suggestionsByJob[job] or {}
+        local newCode = suggestions[index]
+        if newCode then
+            table.remove(suggestions, index)
+            suggestionsByJob[job] = suggestions
+
+            codesByJob[job] = codesByJob[job] or {}
+            table.insert(codesByJob[job], { id = #codesByJob[job] + 1, title = newCode })
+
+            saveCodes()
+            saveSuggestions()
+
+            NotifyPlayer(src, Config.Notification.Suggestion_accepted, 'success')
+        end
+    end
+end)
+
+RegisterNetEvent('funkcodes_ox:rejectSuggestion', function(jobName, index)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local suggestions = suggestionsByJob[jobName] or {}
+
+    if suggestions and suggestions[index] then
+        table.remove(suggestions, index)
+        suggestionsByJob[jobName] = suggestions
+        saveSuggestions()
+
+        NotifyPlayer(src, Config.Notification.Suggestion_removed, 'error')
+    end
+end)
+
+RegisterNetEvent('funkcodes_ox:editCode')
+AddEventHandler('funkcodes_ox:editCode', function(job, index, newTitle)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        if codesByJob[job] and codesByJob[job][index] then
+            codesByJob[job][index].title = newTitle
+            saveCodes()
+
+            NotifyPlayer(src, Config.Notification.code_changed, 'success')
+        else
+            NotifyPlayer(src, Config.Notification.invalid_code, 'error')
+        end
+    end
+end)
+
+RegisterNetEvent('funkcodes_ox:deleteCode')
+AddEventHandler('funkcodes_ox:deleteCode', function(job, index)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        if codesByJob[job] and codesByJob[job][index] then
+            table.remove(codesByJob[job], index)
+            saveCodes()
+
+            NotifyPlayer(src, Config.Notification.code_deletet, 'success')
+        else
+
+            NotifyPlayer(src, Config.Notification.invalid_code, 'error')
+        end
+    end
+end)
+
+lib.callback.register('funkcodes_ox:getCodes', function(source, job)
+    local xPlayer = ESX.GetPlayerFromId(source)
+
+    if xPlayer and xPlayer.job.name == job then
+        return {
+            codes = codesByJob[job] or {},
+            suggestions = suggestionsByJob[job] or {}
+        }
+    else
+        return {
+            codes = codesByJob[job] or {},
+            suggestions = {}
+        }
+    end
+end)

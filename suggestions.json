@@ -1,0 +1,16 @@
+{
+    "ambulance": [
+        "Code Blue = Herzstillstand",
+        "Code Red  = Feueralarm im Krankenhaus",
+        "Code White = Aggressiver Patient",
+        "Code Green = Evakuierung",
+        "Code Yellow  = Katastrophenalarm"
+    ],
+    "police": [
+        "10-0 = Vorsicht walten lassen",
+        "10-1 = Frequenzwechsel",
+        "10-2 = Negativ",
+        "10-3 = Sendevorgang einstellen",
+        "10-4 = Verstanden (Ok)"
+    ]
+}

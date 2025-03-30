@@ -1,12 +1,3 @@
-## Funkcodes_ox
-[DE]
-
-## Beschreibung
- Funk code Menü für ESX mit OX_Lib
- Dieses menü dient dazu im RP zu sehen welche funk codes man Verwenden kann.
- Das Projekt wird noch weiter Verbessern bei vorschläge gerne ein pull reqeust öffnen :)
- 
-```lua
 Config = {}
 
 Config.debug = false
@@ -26,6 +17,7 @@ Config.Notification ={
     Suggestion_sent = 'Vorschlag gesendet!',
     Suggestion_accepted = 'Vorschlag angenommen',
     Suggestion_rejected = 'Vorschlag abgelehnt',
+    Suggestion_rejected_player = 'Dein Vorschlag wurde abgelehnt!!',
     Suggestion_removed = 'Der Vorschlag wurde erfolgreich entfernt',
     Suggestion_accept_and_reject = 'Bitte wähle **nur eine** Option aus!',
     no_authorization = 'Du hast keine Berechtigung, diesen Code zu verwenden',
@@ -72,47 +64,11 @@ Config.alertDialog = {
     cancel_button = 'Abbrechen',
     content = 'Willst du\n\n **%s** \n\nwirklich löschen?\n\n**Dieser Vorgang kann nicht rückgängig gemacht werden**.'
 }
-```
-
-## Abhängigkeiten:
-- ESX Framework Legacy 1.5.0 oder Höher! https://github.com/esx-framework/esx_core/releases
-- ox_lib https://github.com/overextended/ox_lib/releases
-
-[Vorschau](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
 
 
+--Englisch Version
 
-
-
-## Radiocodes_ox
-[EN]
-
-## Description
- Radio code menu for ESX with OX_Lib
- This menu is used to see which radio codes can be used in the RP.
- The project will continue to improve with suggestions like to open a pull reqeust :)
-
-## Dependencies:
-- ESX Framework Legacy 1.8.0 or higher https://github.com/esx-framework/esx_core/releases
-- ox_lib https://github.com/overextended/ox_lib/releases
-
-
-```lua
-Config = {}
-
-Config.debug = false
-
-Config.Command = 'radiocodes'
-
-Config.Notification_System = 'ESX'   -- ESX = es_extended or OX = OX_Lib or Custom
-
-Config.AllowedJobs = { -- Separate radio codes for separate jobs!!
-    'police',
-    'bsco',
-    'ambulance',
-}
-
-Config.Notification ={
+--[[ Config.Notification ={
     --Client
     Suggestion_sent = 'Suggestion sent!',
     Suggestion_accepted = 'Suggestion accepted',
@@ -162,7 +118,4 @@ Config.alertDialog = {
     confirm_button = 'Delete',
     cancel_button = 'Cancel',
     content = 'Do you\n\n **%s** \n\nreally want to delete? \n\n**This process cannot be undone**.'
-}
-```
-
-[Preview](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
+} ]]

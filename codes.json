@@ -1,0 +1,32 @@
+{
+    "ambulance": [
+        {
+            "title": "Code Blue = Herzstillstand",
+            "id": 1
+        },
+        {
+            "title": "Code Red  = Feueralarm im Krankenhaus",
+            "id": 2
+        }
+    ],
+    "homeland": [
+        {
+            "id": 1,
+            "title": "10-66 = Außerdienst"
+        },
+        {
+            "id": 2,
+            "title": "10-55 = testdrive"
+        }
+    ],
+    "police": [
+        {
+            "title": "10-1",
+            "id": 1
+        },
+        {
+            "title": "10-2",
+            "id": 2
+        }
+    ]
+}

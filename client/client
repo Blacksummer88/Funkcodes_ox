@@ -1,0 +1,270 @@
+local codesByJob = {}
+local suggestionsByJob = {}
+local isBoss = false
+
+RegisterNetEvent('esx:setJob', function(job)
+    ESX.PlayerData.job = job
+    isBoss = job.grade_name == 'boss'
+end)
+
+CreateThread(function()
+    while not ESX.IsPlayerLoaded() do Wait(100) end
+    ESX.PlayerData = ESX.GetPlayerData()
+    isBoss = ESX.PlayerData.job.grade_name == 'boss'
+end)
+
+function NotifyPlayer(msg, type, time)
+    if Config.Notification_System == 'OX' then
+        TriggerClientEvent('ox_lib:notify', {
+            description = msg,
+            type = type or 'inform'
+        })
+    elseif Config.Notification_System == 'ESX' then
+        ESX.ShowNotification(msg, type, time)
+    elseif Config.Notification_System == 'Custom' then
+        -- ↓↓↓↓↓↓Trigger dein eigenes Event↓↓↓↓↓↓
+        TriggerClientEvent('custom_notify', msg, type)
+    end
+end
+
+RegisterNetEvent('funkcodes_ox:suggestCode', function(job, newCode)
+    local src = source
+    suggestionsByJob[job] = suggestionsByJob[job] or {}
+    table.insert(suggestionsByJob[job], newCode)
+    saveSuggestions()
+
+    NotifyPlayer(fig.Notification.Suggestion_sent, 'success')
+end)
+
+
+RegisterNetEvent('funkcodes_ox:approveSuggestion', function(job, index)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        local suggestions = suggestionsByJob[job] or {}
+        local newCode = suggestions[index]
+        if newCode then
+            table.remove(suggestions, index)
+            codesByJob[job] = codesByJob[job] or {}
+            table.insert(codesByJob[job], { id = #codesByJob[job] + 1, title = newCode })
+            saveCodes()
+            saveSuggestions()
+
+            NotifyPlayer(fig.Notification.Suggestion_accepted, 'success')
+        end
+    end
+end)
+
+RegisterNetEvent('funkcodes_ox:rejectSuggestion', function(job, index)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    if xPlayer and xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
+        table.remove(suggestionsByJob[job], index)
+        saveSuggestions()
+
+        NotifyPlayer(fig.Notification.Suggestion_rejected, 'error')
+    end
+end)
+
+
+RegisterCommand(Config.Command, function()
+    local playerJob = ESX.GetPlayerData().job
+    local isAllowed = false
+    for _, job in ipairs(Config.AllowedJobs) do
+        if playerJob.name == job then
+            isAllowed = true
+            break
+        end
+    end
+    
+    if not isAllowed then
+        NotifyPlayer(fig.Notification.no_authorization, 'error')
+        return
+    end
+
+    lib.callback('funkcodes_ox:getCodes', false, function(data)
+        local codes = data.codes
+        local suggestions = data.suggestions
+
+        if not codes or type(codes) ~= "table" then
+            codes = {}
+        end
+        if not suggestions or type(suggestions) ~= "table" then
+            suggestions = {}
+        end
+
+        local options = {}
+        table.insert(options, {
+            title = Config.Contextmenu.funk_code_menu,
+            onSelect = function()
+                local codeOptions = {}
+                for i, v in ipairs(codes) do
+                    table.insert(codeOptions, {
+                        title = v.title,
+                        onSelect = nil
+                    })
+                end
+
+                lib.registerContext({
+                    id = 'code_menu',
+                    title = Config.Contextmenu.funk_code_menu,
+                    menu = 'main_funkcodes_ox_menu',
+                    options = codeOptions
+                })
+                lib.showContext('code_menu')
+            end
+        })
+
+        if playerJob.grade_name == 'boss' then
+            table.insert(options, {
+                title = Config.Contextmenu.funk_code_added,
+                onSelect = function()
+                    local input = lib.inputDialog(Config.input_dialog.funk_code_added, {
+                        {type = 'input', label = 'Funk-Code Text', required = true}
+                    })
+                    if input and input[1] then
+                        TriggerServerEvent('funkcodes_ox:addCode', playerJob.name, input[1])
+                    end
+                end
+            })
+
+            if #suggestions > 0 then
+                table.insert(options, {
+                    title = Config.Contextmenu.check_suggested_radio_codes,
+                    onSelect = function()
+                        local suggestionOptions = {}
+                        for i, v in ipairs(suggestions) do
+                            table.insert(suggestionOptions, {
+                                title = v,
+                                onSelect = function()
+                                    local choice = lib.inputDialog(Config.input_dialog.manage_suggestion, {
+                                        { type = 'checkbox', label = Config.input_dialog.yes },
+                                        { type = 'checkbox', label = Config.input_dialog.no }
+                                    })
+                                    
+                                    if choice then
+                                        local accept = choice[1]
+                                        local reject = choice[2]
+                                    
+                                        if accept and not reject then
+                                            TriggerServerEvent('funkcodes_ox:approveSuggestion', playerJob.name, i)
+                                        elseif reject and not accept then
+                                            TriggerServerEvent('funkcodes_ox:rejectSuggestion', playerJob.name, i)
+                                        elseif accept and reject then
+                                            NotifyPlayer(Config.Notification.Suggestion_accept_and_reject, 'error')
+                                        else
+                                            NotifyPlayer(Config.Notification.you_have_to_make_a_selection, 'error')
+                                        end
+
+                                        if (accept or reject) and not (accept and reject) then
+                                            SetTimeout(250, function()
+                                                ExecuteCommand(Config.Command)
+                                            end)
+                                        end
+                                    end
+                                end
+                            })
+                        end
+
+                        lib.registerContext({
+                            id = 'suggestion_menu',
+                            title = Config.Contextmenu.suggestions_menu,
+                            menu = 'main_funkcodes_ox_menu',
+                            options = suggestionOptions
+                        })
+                        lib.showContext('suggestion_menu')
+                    end
+                })
+            end
+        end
+
+        if playerJob.grade_name == 'boss' then
+            table.insert(options, {
+                title = Config.Contextmenu.funk_code_changed_menu,
+                onSelect = function()
+                    local editOptions = {}
+                    for i, v in ipairs(codes) do
+                        table.insert(editOptions, {
+                            title = v.title,
+                            onSelect = function()
+                                local input = lib.inputDialog(Config.input_dialog.code_changed, {
+                                    {type = 'input', label = 'Code bearbeiten', default = v.title, required = true}
+                                })
+                                if input and input[1] then
+                                    TriggerServerEvent('funkcodes_ox:editCode', playerJob.name, i, input[1])
+                                end
+                            end
+                        })
+                    end
+
+                    lib.registerContext({
+                        id = 'edit_codes_menu',
+                        title = Config.Contextmenu.funk_code_changed,
+                        menu = 'main_funkcodes_ox_menu',
+                        options = editOptions
+                    })
+                    lib.showContext('edit_codes_menu')
+                end
+            })
+        end
+
+        if playerJob.grade_name == 'boss' then
+            table.insert(options, {
+                title = Config.Contextmenu.delete_existing_codes_menu,
+                onSelect = function()
+                    local deleteOptions = {}
+                    for i, v in ipairs(codes) do
+                        table.insert(deleteOptions, {
+                            title = v.title,
+                            onSelect = function()
+                                local result = lib.alertDialog({
+                                    header = Config.Contextmenu.delete_existing_codes,
+                                    content = (Config.alertDialog.content):format(v.title),
+                                    centered = true,
+                                    cancel = true,
+                                    size = 'md',
+                                    labels = {
+                                        confirm = Config.alertDialog.confirm_button,
+                                        cancel = Config.alertDialog.cancel_button
+                                    }
+                                })
+
+                                if result == 'confirm' then
+                                    TriggerServerEvent('funkcodes_ox:deleteCode', playerJob.name, i)
+                                end
+                            end
+                        })
+                    end
+
+                    lib.registerContext({
+                        id = 'delete_codes_menu',
+                        title = Config.Contextmenu.delete_existing_codes,
+                        menu = 'main_funkcodes_ox_menu',
+                        options = deleteOptions
+                    })
+                    lib.showContext('delete_codes_menu')
+                end
+            })
+        end
+
+        table.insert(options, {
+            title = Config.Contextmenu.funk_code_suggestions_menu,
+            onSelect = function()
+                local input = lib.inputDialog(Config.input_dialog.radio_code_suggestion, {
+                    {type = 'input', label = 'Funk-Code Text', required = true}
+                })
+                if input and input[1] then
+                    TriggerServerEvent('funkcodes_ox:suggestCode', playerJob.name, input[1])
+                end
+            end
+        })
+
+        lib.registerContext({
+            id = 'main_funkcodes_ox_menu',
+            title = Config.Contextmenu.funk_menu .. playerJob.label,
+            options = options
+        })
+
+        lib.showContext('main_funkcodes_ox_menu')
+    end, playerJob.name)
+end)
