@@ -1,11 +1,16 @@
 ## Funkcodes_ox
+[Vorschau](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
 [DE]
 
 ## Beschreibung
  Funk code Menü für ESX mit OX_Lib
  Dieses menü dient dazu im RP zu sehen welche funk codes man Verwenden kann.
  Das Projekt wird noch weiter Verbessern bei vorschläge gerne ein pull reqeust öffnen :)
- 
+
+ ## Abhängigkeiten:
+- ESX Framework Legacy 1.5.0 oder Höher! https://github.com/esx-framework/esx_core/releases
+- ox_lib https://github.com/overextended/ox_lib/releases
+
 ```lua
 Config = {}
 
@@ -74,17 +79,12 @@ Config.alertDialog = {
 }
 ```
 
-## Abhängigkeiten:
-- ESX Framework Legacy 1.5.0 oder Höher! https://github.com/esx-framework/esx_core/releases
-- ox_lib https://github.com/overextended/ox_lib/releases
-
-[Vorschau](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
-
 
 
 
 
 ## Radiocodes_ox
+[Preview](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
 [EN]
 
 ## Description
@@ -164,5 +164,3 @@ Config.alertDialog = {
     content = 'Do you\n\n **%s** \n\nreally want to delete? \n\n**This process cannot be undone**.'
 }
 ```
-
-[Preview](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
