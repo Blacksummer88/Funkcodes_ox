@@ -2,7 +2,7 @@ fx_version 'bodacious'
 game 'gta5'
 author 'Blacksummer'
 description 'Funk Codes for ESX with OX Lib'
-version '1.0.0'
+version '1.0.3'
 lua54 "yes"
 
 shared_scripts {
