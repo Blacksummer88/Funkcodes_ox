@@ -13,9 +13,13 @@ CreateThread(function()
     isBoss = ESX.PlayerData.job.grade_name == 'boss'
 end)
 
+function IsBoss()
+    return ESX.GetPlayerData().job.grade_name == 'boss'
+end
+
 function NotifyPlayer(msg, type, time)
     if Config.Notification_System == 'OX' then
-        TriggerClientEvent('ox_lib:notify', {
+        lib.notify({
             description = msg,
             type = type or 'inform'
         })
@@ -99,10 +103,20 @@ RegisterCommand(Config.Command, function()
             onSelect = function()
                 local codeOptions = {}
                 for i, v in ipairs(codes) do
-                    table.insert(codeOptions, {
-                        title = v.title,
-                        onSelect = nil
-                    })
+                    if Config.Contextmenu_button then
+                        table.insert(codeOptions, {
+                            title = v.title,
+                            onSelect = function ()
+                                local playerJob = ESX.GetPlayerData().job.name
+                                TriggerServerEvent('funkcodes_ox:sent_button_notification', playerJob, v.title)
+                            end
+                        })
+                    else
+                        table.insert(codeOptions, {
+                            title = v.title,
+                            onSelect = nil
+                        })
+                    end
                 end
 
                 lib.registerContext({
@@ -115,7 +129,7 @@ RegisterCommand(Config.Command, function()
             end
         })
 
-        if playerJob.grade_name == 'boss' then
+        if IsBoss() then
             table.insert(options, {
                 title = Config.Contextmenu.funk_code_added,
                 onSelect = function()
@@ -132,7 +146,7 @@ RegisterCommand(Config.Command, function()
                 end
             })
 
-            if #suggestions > 0 then
+            if IsBoss() and #suggestions > 0 then
                 table.insert(options, {
                     title = Config.Contextmenu.check_suggested_radio_codes,
                     onSelect = function()
@@ -182,7 +196,7 @@ RegisterCommand(Config.Command, function()
             end
         end
 
-        if playerJob.grade_name == 'boss' then
+        if IsBoss() then
             table.insert(options, {
                 title = Config.Contextmenu.funk_code_changed_menu,
                 onSelect = function()
@@ -222,7 +236,7 @@ RegisterCommand(Config.Command, function()
             })
         end
 
-        if playerJob.grade_name == 'boss' then
+        if IsBoss() then
             table.insert(options, {
                 title = Config.Contextmenu.delete_existing_codes_menu,
                 onSelect = function()

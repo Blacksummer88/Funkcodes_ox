@@ -6,6 +6,8 @@ Config.Command = 'funkcodes'
 
 Config.Notification_System = 'ESX'   -- ESX = es_extended or OX = OX_Lib or Custom
 
+Config.Contextmenu_button = false -- true aktiviert die Funkcodes Button mit einer Notification false deaktiviert die Notification
+
 Config.AllowedJobs = { -- Seperate Funkcodes für Seperate Jobs!!
     'police',
     'bsco',
