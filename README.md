@@ -1,6 +1,5 @@
-## Funkcodes_ox
+## Funkcodes_ox Deutsch
 [Vorschau](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
-[DE]
 
 ## Beschreibung
  Funk code Menü für ESX mit OX_Lib
@@ -83,9 +82,8 @@ Config.alertDialog = {
 
 
 
-## Radiocodes_ox
+## Radiocodes_ox Englisch
 [Preview](https://medal.tv/de/games/gta-v/clips/jZbIGdC9dHnd03Qlg?invite=cr-MSw2ZXIsMzc4NzkwMTMx)
-[EN]
 
 ## Description
  Radio code menu for ESX with OX_Lib
